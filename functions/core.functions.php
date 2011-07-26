@@ -8,7 +8,7 @@ function hmbkp_activate() {
 	hmbkp_deactivate();
 
 	hmbkp_setup_daily_schedule();
-    	    
+
 }
 
 /**
@@ -35,8 +35,8 @@ function hmbkp_deactivate() {
 
 	//If there is a backup running file we should delete it on activate.
     $file = hmbkp_path() . '/.backup_running';
-    if( file_exists( $file ) )
-    	unlink(  );
+    if ( file_exists( $file ) )
+    	unlink( $file );
 
 	// Clear cron
 	wp_clear_scheduled_hook( 'hmbkp_schedule_backup_hook' );
@@ -421,7 +421,7 @@ function hmbkp_shell_exec_available() {
 
 /**
  * Check whether safe mode if active or not
- * 
+ *
  * @return bool
  */
 function hmbkp_is_safe_mode_active() {
@@ -512,7 +512,7 @@ function hmbkp_path() {
 
 /**
  * Return the default backup path
- * 
+ *
  * @return string path
  */
 function hmbkp_path_default() {
@@ -522,7 +522,7 @@ function hmbkp_path_default() {
 /**
  * Move the backup directory and all existing backup files to a new
  * location
- * 
+ *
  * @param string $from path to move the backups dir from
  * @param string $to path to move the backups dir to
  * @return void
@@ -577,10 +577,10 @@ function hmbkp_possible() {
 
 	if ( !is_writable( hmbkp_path() ) || !is_dir( hmbkp_path() ) || hmbkp_is_safe_mode_active() )
 		return false;
-	
+
 	if ( defined( 'HMBKP_FILES_ONLY' ) && HMBKP_FILES_ONLY && defined( 'HMBKP_DATABASE_ONLY' ) && HMBKP_DATABASE_ONLY )
 		return false;
-	
+
 	return true;
 }
 
@@ -592,7 +592,7 @@ function hmbkp_possible() {
 function hmbkp_cleanup() {
 
 	$hmbkp_path = hmbkp_path();
-	
+
 	if ( !is_dir( $hmbkp_path ) )
 		return;
 
@@ -605,5 +605,49 @@ function hmbkp_cleanup() {
     	closedir( $handle );
 
     endif;
+
+}
+
+function hmbkp_ftp( $file, $set_status = false ) {
+
+	define( 'FS_CONNECT_TIMEOUT', 10 );
+	
+	require_once( ABSPATH . '/wp-admin/includes/file.php' );
+	require_once( ABSPATH . '/wp-admin/includes/class-wp-filesystem-base.php' );
+	require_once( ABSPATH . '/wp-admin/includes/class-wp-filesystem-ftpext.php' );
+
+	// Default to SSL off
+	//if ( empty( HMBKP_FTPS ) )
+	//    HMBKP_FTPS = false;
+
+	// We need the hostname, username and password to continue.
+	//if ( empty( HMBKP_FTP_HOST ) || empty( $this->FTPusername ) || empty( $this->FTPpassword ) )
+	//    return;
+
+	if ( $set_status )
+	    hmbkp_set_status( __( 'Uploading to ' . HMBKP_FTP_HOST, 'hmbkp' ) );
+
+	// Setup the connection
+	$connection = new WP_Filesystem_FTPext( array( 'hostname' => HMBKP_FTP_HOST, 'username' => HMBKP_FTP_USER, 'password' => HMBKP_FTP_PASS ) );
+
+	// Connect and connection errors
+	if ( !$connection->connect() ) :
+	    error_log( 'NSM: Faild to connect to ' . HMBKP_FTP_HOST );
+	    error_log( 'NSM: ' . print_r( $connection->errors, 1 ) );
+
+	else :
+	    error_log( 'NSM: Successfully connected to ' . HMBKP_FTP_HOST );
+
+	endif;
+
+	// Upload the file
+	if ( !$connection->put_contents( 'backup.zip', file_get_contents( $file ) ) ) :
+	    error_log( 'NSM: Faild to upload ' . $file . ' to ' . HMBKP_FTP_HOST );
+	    error_log( 'NSM: ' . print_r( $connection->errors, 1 ) );
+
+	else :
+	    error_log( 'NSM: Successfully uploaded ' . $file . ' to ' . HMBKP_FTP_HOST );
+
+	endif;
 
 }

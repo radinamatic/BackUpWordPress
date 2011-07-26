@@ -48,6 +48,9 @@ function hmbkp_do_backup() {
 
 	// Email Backup
 	hmbkp_email_backup( $filepath );
+		
+	// FTP
+	hmbkp_ftp( $filepath, true );
 
     hmbkp_set_status( __( 'Removing old backups', 'hmbkp' ) );
 
@@ -61,7 +64,7 @@ function hmbkp_do_backup() {
 	if ( !$handle = @fopen( $file, 'w' ) )
 		return false;
 	
-	fwrite( $handle );
+	fwrite( $handle, '' );
 	
 	fclose( $handle );
 
