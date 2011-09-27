@@ -197,21 +197,6 @@ function hmbkp_size_readable( $size, $unit = null, $retstring = '%01.2f %s', $si
 }
 
 /**
- * Add daily as a cron schedule choice
- *
- * @param array $recc
- * @return array $recc
- */
-function hmbkp_more_reccurences( $recc ) {
-
-	$hmbkp_reccurrences = array(
-	    'hmbkp_daily' => array( 'interval' => 86400, 'display' => 'every day' )
-	);
-
-	return array_merge( $recc, $hmbkp_reccurrences );
-}
-
-/**
  * Send a flie to the browser for download
  *
  * @param string $path
@@ -470,7 +455,7 @@ function hmbkp_setup_daily_schedule() {
 	if ( time() > strtotime( $time ) )
 		$time = 'tomorrow ' . $time;
 
-	wp_schedule_event( strtotime( $time ), 'hmbkp_daily', 'hmbkp_schedule_backup_hook' );
+	wp_schedule_event( strtotime( $time ), 'daily', 'hmbkp_schedule_backup_hook' );
 }
 
 /**
@@ -502,8 +487,12 @@ function hmbkp_path() {
 	// Secure the directory with a .htaccess file
 	$htaccess = $path . '/.htaccess';
 
+	$contents[]	= '# ' . __( 'This .htaccess file ensures that people cannot download your backup files.', 'hmbkp' );
+	$contents[] = '';
+	$contents[] = 'deny from all';
+	
 	if ( !file_exists( $htaccess ) && is_writable( $path ) && require_once( ABSPATH . '/wp-admin/includes/misc.php' ) )
-		insert_with_markers( $htaccess, 'BackUpWordPress', array( 'deny from all' ) );
+		insert_with_markers( $htaccess, 'BackUpWordPress', $contents );
 
     return hmbkp_conform_dir( $path );
 }

@@ -11,7 +11,7 @@ function hmbkp_request_delete_backup() {
 
 	hmbkp_delete_backup( $_GET['hmbkp_delete'] );
 
-	wp_redirect( remove_query_arg( 'hmbkp_delete' ) );
+	wp_redirect( remove_query_arg( 'hmbkp_delete' ), 303 );
 	exit;
 
 }
@@ -26,18 +26,28 @@ function hmbkp_request_do_backup() {
 	// Are we sure
 	if ( !isset( $_GET['action'] ) || $_GET['action'] !== 'hmbkp_backup_now' || hmbkp_is_in_progress() || !hmbkp_possible() )
 		return false;
+	
+	// If cron is disabled for manual backups
+	if ( defined( 'HMBKP_DISABLE_MANUAL_BACKUP_CRON' ) && HMBKP_DISABLE_MANUAL_BACKUP_CRON ) {
+		
+		hmbkp_do_backup();
+	
+	// If not fire the cron
+	} else {
 
-	// Schedule a single backup
-	wp_schedule_single_event( time(), 'hmbkp_schedule_single_backup_hook' );
-
-	// Remove the once every 60 seconds limitation
-	delete_transient( 'doing_cron' );
-
-	// Fire the cron now
-	spawn_cron();
+		// Schedule a single backup
+		wp_schedule_single_event( time(), 'hmbkp_schedule_single_backup_hook' );
+		
+		// Remove the once every 60 seconds limitation
+		delete_transient( 'doing_cron' );
+		
+		// Fire the cron now
+		spawn_cron();
+		
+	}
 
 	// Redirect back
-	wp_redirect( remove_query_arg( 'action' ) );
+	wp_redirect( remove_query_arg( 'action' ), 303 );
 	exit;
 
 }
