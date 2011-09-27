@@ -35,8 +35,12 @@ function hmbkp_deactivate() {
 
 	//If there is a backup running file we should delete it on activate.
     $file = hmbkp_path() . '/.backup_running';
+
     if ( file_exists( $file ) )
     	unlink( $file );
+
+	delete_transient( 'hmbkp_running' );
+	delete_transient( 'hmbkp_estimated_filesize' );
 
 	// Clear cron
 	wp_clear_scheduled_hook( 'hmbkp_schedule_backup_hook' );
@@ -55,13 +59,7 @@ function hmbkp_update() {
 	// Every update
 	if ( version_compare( HMBKP_VERSION, get_option( 'hmbkp_plugin_version' ), '>' ) ) :
 
-		hmbkp_cleanup();
-
-		delete_transient( 'hmbkp_estimated_filesize' );
-		delete_option( 'hmbkp_running' );
-		delete_option( 'hmbkp_complete' );
-		delete_option( 'hmbkp_status' );
-		delete_transient( 'hmbkp_running' );
+		hmbkp_deactivate();
 
 		// Check whether we have a logs directory to delete
 		if ( is_dir( hmbkp_path() . '/logs' ) )
