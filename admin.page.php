@@ -14,7 +14,7 @@
 
 <?php endif; ?>
 
-		<a href="#hmbkp_advanced-options" class="add-new-h2 hmbkp_advanced-options-toggle"><?php _e( 'Advanced Options' ); ?></a>
+		<a href="#hmbkp_advanced-options" class="add-new-h2 hmbkp_advanced-options-toggle"><?php _e( 'Advanced Options', 'hmbkp' ); ?></a>
 
 	</h2>
 
@@ -30,7 +30,7 @@
 
 <?php endif; ?>
 
-	<?php include_once( HMBKP_PLUGIN_PATH . '/admin.advanced-options.php' ); ?>
+	<?php include_once( HMBKP_PLUGIN_PATH . '/admin.settings.php' ); ?>
 	
 	<p class="howto"><?php printf( __( 'If you need help getting things working you are more than welcome to email us at %s and we\'ll do what we can to help.', 'hmbkp' ), '<a href="mailto:support@humanmade.co.uk">support@humanmade.co.uk</a>' ); ?></p>
 
